@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lock-In Index</title>
+<meta name="description" content="Measuring cloud vendor lock-in from Terraform code.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>Lock-In Index</h1>
+        <p class="sub">Soni, Pant, Toshif</p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
+      <button role="tab" data-tab="analyze">Analyze</button>
+      <button role="tab" data-tab="explore">Dataset</button>
+      <button role="tab" data-tab="results">Results</button>
+      <button role="tab" data-tab="whatif">What-if</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ============================ OVERVIEW -->
+<section id="overview" class="panel active">
+  <div class="hero">
+    <div class="hero-main">
+      <div class="eyebrow">Static analysis of Infrastructure-as-Code</div>
+      <h2>Measuring cloud vendor lock-in from Terraform code</h2>
+      <p>The analyzer reads Terraform configurations, identifies every cloud resource they declare, and scores each resource on four lock-in dimensions. The resource scores are averaged into a single <b>Lock-In Index (LII)</b> from 0 to 100, which we use to answer four research questions.</p>
+      <div class="row hero-actions">
+        <button class="primary" data-goto="analyze">Analyze your Terraform</button>
+        <button class="secondary" data-goto="explore">Browse the dataset</button>
+      </div>
+    </div>
+    <aside class="formula-card" aria-label="Scoring formula">
+      <div class="label">Scoring formula</div>
+      <div class="formula-big">LII(r) = 0.35A + 0.25D + 0.25E + 0.15X</div>
+      <dl class="dims">
+        <div><dt>A</dt><dd>API proprietariness</dd></div>
+        <div><dt>D</dt><dd>Data / state lock</dd></div>
+        <div><dt>E</dt><dd>Equivalence gap</dd></div>
+        <div><dt>X</dt><dd>Egress exposure</dd></div>
+      </dl>
+      <p class="small muted">A configuration's LII is the mean of its resource scores, scaled to 0–100.</p>
+    </aside>
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="section-head">
+    <h3>Pipeline</h3>
+    <p class="muted small">From public repositories to a reproducible score.</p>
+  </div>
+  <ol class="pipeline">
+    <li><span>01</span><b>Collect</b><em>Public GitHub repositories, cloned at fixed commits</em></li>
+    <li><span>02</span><b>Find roots</b><em>Directories that are deployed directly</em></li>
+    <li><span>03</span><b>Extract</b><em>Every <code>resource "type"</code>, following local modules</em></li>
+    <li><span>04</span><b>Classify</b><em>21 service categories assigned by pattern rules</em></li>
+    <li><span>05</span><b>Score</b><em>Weighted rubric across four dimensions</em></li>
+    <li><span>06</span><b>Analyse</b><em>Averages, statistical tests, sensitivity, figures</em></li>
+  </ol>
+
+  <div class="section-head">
+    <h3>Key findings</h3>
+    <p class="muted small">Computed from the dataset when the page loads.</p>
+  </div>
+  <div class="cards3">
+    <article class="card finding">
+      <div class="kicker">RQ2 · Categories</div>
+      <h4>Glue services drive most lock-in</h4>
+      <p id="f1"></p>
+      <button class="link" data-goto="results" data-rq="rq2">View evidence &rarr;</button>
+    </article>
+    <article class="card finding">
+      <div class="kicker">RQ3 · Architectures</div>
+      <h4>Kubernetes designs are far less locked-in</h4>
+      <p id="f2"></p>
+      <button class="link" data-goto="results" data-rq="rq3">View evidence &rarr;</button>
+    </article>
+    <article class="card finding">
+      <div class="kicker">RQ4 · Robustness</div>
+      <h4>Conclusions hold under rubric changes</h4>
+      <p id="f3"></p>
+      <button class="link" data-goto="whatif">Try the what-if rubric &rarr;</button>
+    </article>
+  </div>
+</section>
+
+<!-- ============================ ANALYZE -->
+<section id="analyze" class="panel">
+  <div class="page-head">
+    <h2>Analyze Terraform</h2>
+    <p class="muted">Paste Terraform code or upload <code>.tf</code> files. The analyzer applies the same rules and rubric as the paper, and runs entirely in your browser.</p>
+  </div>
+  <div class="two">
+    <div>
+      <div class="row samples">
+        <span class="muted small">Load a sample</span>
+        <button class="chip" data-sample="serverless">Serverless app · AWS</button>
+        <button class="chip" data-sample="gke">Kubernetes cluster · GCP</button>
+        <button class="chip" data-sample="iaas">Web app on VMs · AWS</button>
+      </div>
+      <div class="editor">
+        <div class="editor-bar"><span class="mono">main.tf</span><span class="muted small">HCL</span></div>
+        <textarea id="tf" spellcheck="false" aria-label="Terraform code"></textarea>
+      </div>
+      <div class="row actions">
+        <button id="run" class="primary">Analyze</button>
+        <label class="upload secondary">Upload .tf files<input id="files" type="file" accept=".tf" multiple></label>
+        <span id="fileinfo" class="muted small"></span>
+      </div>
+      <p class="muted small note">Modules from other directories or the Terraform Registry are not followed when pasting. Upload those files too to include them.</p>
+    </div>
+    <div>
+      <div id="scorebox" class="scorebox empty">
+        <p class="muted">Results appear here.</p>
+      </div>
+    </div>
+  </div>
+  <div id="breakdown"></div>
+</section>
+
+<!-- ============================ EXPLORE -->
+<section id="explore" class="panel">
+  <div class="page-head">
+    <h2>Dataset</h2>
+    <p class="muted">Every configuration in the study. Select a row to see how its score was calculated and to open its source on GitHub at the exact commit analysed.</p>
+  </div>
+  <div class="filters">
+    <input id="q" type="search" placeholder="Search repository, path or resource type">
+    <select id="fprov" aria-label="Provider"><option value="">All providers</option><option>AWS</option><option>Azure</option><option>GCP</option></select>
+    <select id="fgroup" aria-label="Architecture group"><option value="">All groups</option><option>K8s-centric</option><option>IaaS/other</option><option>Managed-PaaS-centric</option></select>
+    <select id="fsort" aria-label="Sort"><option value="desc">Highest LII first</option><option value="asc">Lowest LII first</option><option value="path">By path</option></select>
+    <span id="count" class="muted small"></span>
+  </div>
+  <div class="two wide-left">
+    <div class="tablewrap"><table id="cfgtable"><thead><tr><th>ID</th><th>Repository / path</th><th>Cloud</th><th>Group</th><th class="num">Res.</th><th class="num">LII</th></tr></thead><tbody></tbody></table></div>
+    <div id="detail" class="detail"><p class="muted">Select a configuration to see its details.</p></div>
+  </div>
+</section>
+
+<!-- ============================ RESULTS -->
+<section id="results" class="panel">
+  <div class="page-head">
+    <h2>Results</h2>
+    <p class="muted">How each conclusion was reached. Every chart is computed from the dataset in your browser, not copied from the paper.</p>
+  </div>
+  <div class="subtabs" role="tablist" aria-label="Research questions">
+    <button data-rq="rq1" aria-selected="true">RQ1 · Providers</button>
+    <button data-rq="rq2">RQ2 · Categories</button>
+    <button data-rq="rq3">RQ3 · Architectures</button>
+    <button data-rq="rq4">RQ4 · Robustness</button>
+    <button data-rq="egress">Exit cost</button>
+  </div>
+  <div id="rqbody"></div>
+</section>
+
+<!-- ============================ WHAT-IF -->
+<section id="whatif" class="panel">
+  <div class="page-head">
+    <h2>What-if rubric</h2>
+    <p class="muted">The rubric weights reflect our judgment. Adjust them and every score in the dataset is recalculated. If the conclusions still hold, they do not depend on our exact choices. This is RQ4, done interactively.</p>
+  </div>
+  <div class="two">
+    <div class="card">
+      <h4>Dimension weights</h4>
+      <div id="sliders"></div>
+      <div class="row actions"><button id="reset" class="ghost">Reset to paper values</button><button id="randomize" class="ghost">Random rubric</button></div>
+      <p class="muted small">Weights are normalised to sum to 1. “Random rubric” also shifts every category score by up to &plusmn;0.15, as in the paper's 1,000 trials.</p>
+    </div>
+    <div>
+      <div id="whatifout"></div>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer class="foot">
+  <div class="wrap muted small">
+    Data: <span id="footdata"></span>. Generated by <code>run_all.sh</code>. Works offline.
+  </div>
+</footer>
+<div id="tip" class="tip" role="tooltip"></div>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
